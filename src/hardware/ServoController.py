@@ -4,6 +4,8 @@ import json
 import os
 import busio
 from board import SCL, SDA
+import digitalio
+import board
 from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 
@@ -11,8 +13,10 @@ class ServoController:
     def __init__(self, config_dir="~/robot/src/config"):
         config_dir = os.path.expanduser(config_dir)
         self._load_configs(config_dir)
+        self._init_abort_gpio()
         self._init_pca9685()
         self._init_servos()
+        self.enable_servos() #Habilitar al iniciar
 
     def _load_configs(self, config_dir):
         def load_json(name):
@@ -21,6 +25,15 @@ class ServoController:
         self.robot_cfg = load_json("robot.json")
         self.calib_cfg = load_json("servo_calibration.json")
         self.offsets = load_json("offsets.json")
+    
+    def _init_abort_gpio(self):
+        # Leer GPIO de abort del config
+        abort_cfg = self.robot_cfg.get("abort_controller", [{}])[0]
+        gpio_num = abort_cfg.get("gpio_port", 17)
+        pin_name = f"D{gpio_num}"
+        self.abort_pin = digitalio.DigitalInOut(getattr(board, pin_name))
+        self.abort_pin.direction = digitalio.Direction.OUTPUT
+        self.abort_pin.value = False  # OE = LOW → habilitado
 
     def _init_pca9685(self):
         board = self.robot_cfg["motion_controller"][0]["boards"][0]["pca9685_1"][0]
@@ -38,8 +51,21 @@ class ServoController:
                 s.set_pulse_width_range(min_pulse=d["min_pulse"], max_pulse=d["max_pulse"])
                 self.servos[name] = s
 
+    def enable_servos(self):
+        """Habilita los servos (OE = LOW)"""
+        self.abort_pin.value = False
+        print("[Servos] HABILITADOS")
+
+    def disable_servos(self):
+        """¡EMERGENCIA! Deshabilita los servos (OE = HIGH)"""
+        self.abort_pin.value = True
+        print("[EMERGENCIA] Servos DESHABILITADOS")
+
     def set_servo_angle(self, name, logical_angle_deg):
         """Envía un ángulo lógico (grados) al servo físico."""
+        # Logica existente (solo si están habilitados)
+        if self.abort_pin.value:
+            return  # ignorar si deshabilitado
         cal = self.calib_cfg[name]
         offset = self.offsets.get(name, 0.0)
         base = cal["zero_angle"] + logical_angle_deg + offset
@@ -59,4 +85,5 @@ class ServoController:
             self.set_servo_angle(name, angle)
 
     def deinit(self):
+        self.disable_servos() # ¡Seguridad!
         self.pca.deinit()

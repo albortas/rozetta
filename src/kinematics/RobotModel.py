@@ -164,7 +164,7 @@ class RobotModel:
         for i, (key, p_hf) in enumerate(HipToFoot.items()):
             # ORDER: FL, FR, RL, RR
 
-            print("LEG: {} \t HipToFoot: {}".format(key, p_hf))
+            # print("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
