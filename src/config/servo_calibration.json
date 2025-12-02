@@ -1,0 +1,50 @@
+{
+  "FL_hip_roll": {
+    "zero_angle": 90.0,
+    "invert_direction": true
+  },
+  "FL_hip_pitch": {
+    "zero_angle": 90.0,
+    "invert_direction": true
+  },
+  "FL_knee": {
+    "zero_angle": 180.0,
+    "invert_direction": true
+  },
+  "FR_hip_roll": {
+    "zero_angle": 90.0,
+    "invert_direction": true
+  },
+  "FR_hip_pitch": {
+    "zero_angle": 90.0,
+    "invert_direction": false
+  },
+  "FR_knee": {
+    "zero_angle": 180.0,
+    "invert_direction": false
+  },
+  "RL_hip_roll": {
+    "zero_angle": 90.0,
+    "invert_direction": false
+  },
+  "RL_hip_pitch": {
+    "zero_angle": 90.0,
+    "invert_direction": true
+  },
+  "RL_knee": {
+    "zero_angle": 180.0,
+    "invert_direction": true
+  },
+  "RR_hip_roll": {
+    "zero_angle": 90.0,
+    "invert_direction": false
+  },
+  "RR_hip_pitch": {
+    "zero_angle": 90.0,
+    "invert_direction": false
+  },
+  "RR_knee": {
+    "zero_angle": 180.0,
+    "invert_direction": false
+  }
+}

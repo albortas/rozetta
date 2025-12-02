@@ -1,0 +1,14 @@
+{
+  "FL_hip_roll": -5,
+  "FL_hip_pitch": 5,
+  "FL_knee": -25,
+  "FR_hip_roll": 5,
+  "FR_hip_pitch": 0,
+  "FR_knee": -35,
+  "RL_hip_roll": -5,
+  "RL_hip_pitch": 0,
+  "RL_knee": -45,
+  "RR_hip_roll": 0,
+  "RR_hip_pitch": -5,
+  "RR_knee": -45
+}
