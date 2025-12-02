@@ -3,14 +3,13 @@ from scipy.special import factorial
 from src.kinematics.LieAlgebra import TransToRp
 import copy
 
-STANCE = 0
-SWING = 1
-
 # Curvas de Bézier basadas en: https://dspace.mit.edu/handle/1721.1/98270  
 # Lógica de rotación basada en: http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf
 
 
 class BezierGait():
+    STANCE = 0
+    SWING = 1
     def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tswing=0.2):
         # Desfase de fase por pata: FL, FR, RL, RR
         # La pata de referencia es FL, siempre 0
@@ -28,7 +27,7 @@ class BezierGait():
         # Tiempo transcurrido desde el último touchdown
         self.time_since_last_TD = 0.0
         # Modo de la trayectoria
-        self.StanceSwing = SWING
+        self.StanceSwing = self.STANCE
         # Valor de fase en la fase de swing [0, 1] de la pata de referencia
         self.SwRef = 0.0
         self.Stref = 0.0
@@ -56,7 +55,7 @@ class BezierGait():
         # Tiempo transcurrido desde el último touchdown
         self.time_since_last_TD = 0.0
         # Modo de la trayectoria
-        self.StanceSwing = SWING
+        self.StanceSwing = self.STANCE
         # Valor de fase en la fase de swing [0, 1] de la pata de referencia
         self.SwRef = 0.0
         self.Stref = 0.0
@@ -80,7 +79,7 @@ class BezierGait():
         :return: Fase de la pata y StanceSwing (bool) que indica si la pata
                  está en modo stance o swing
         """
-        StanceSwing = STANCE
+        StanceSwing = self.STANCE
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
         ti = self.Get_ti(index, Tstride)
@@ -91,7 +90,7 @@ class BezierGait():
 
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
-            StanceSwing = STANCE
+            StanceSwing = self.STANCE
             if Tstance == 0.0:
                 Stnphase = 0.0
             else:
@@ -102,10 +101,10 @@ class BezierGait():
             return Stnphase, StanceSwing
         # SWING
         elif ti >= -Tswing and ti < 0.0:
-            StanceSwing = SWING
+            StanceSwing = self.SWING
             Sw_phase = (ti + Tswing) / Tswing
         elif ti > Tstance and ti <= Tstride:
-            StanceSwing = SWING
+            StanceSwing = self.SWING
             Sw_phase = (ti - Tstance) / Tswing
         # Contacto con el suelo al final del swing
         if Sw_phase >= 1.0:
@@ -308,10 +307,10 @@ class BezierGait():
         th_mod = np.arctan2(g_mag, DefaultBodyToFoot_Magnitude)
 
         # Ángulo recorrido por el pie para la rotación
-        # FR y BL
+        # FR y RL
         if index == 1 or index == 2:
             phi_arc = np.pi / 2.0 + DefaultBodyToFoot_Direction + th_mod
-        # FL y BR
+        # FL y RR
         else:
             phi_arc = np.pi / 2.0 - DefaultBodyToFoot_Direction + th_mod
 
@@ -414,17 +413,17 @@ class BezierGait():
            :returns: Coordenadas del pie relativas al cuerpo sin modificar
         """
         phase, StanceSwing = self.GetPhase(index, Tstance, self.Tswing)
-        if StanceSwing == SWING:
+        if StanceSwing == self.SWING:
             stored_phase = phase + 1.0
         else:
             stored_phase = phase
         # Solo para seguimiento
         self.Phases[index] = stored_phase
         # print("LEG: {} \t PHASE: {}".format(index, stored_phase))
-        if StanceSwing == STANCE:
+        if StanceSwing == self.STANCE:
             return self.StanceStep(phase, L, LateralFraction, YawRate,
                                    penetration_depth, T_bf, key, index)
-        elif StanceSwing == SWING:
+        elif StanceSwing == self.SWING:
             return self.SwingStep(phase, L, LateralFraction, YawRate,
                                   clearance_height, T_bf, key, index)
 

@@ -17,11 +17,11 @@ sys.path.append(os.path.expanduser("~/robot"))
 
 from src.kinematics.RobotModel import RobotModel
 
-# Importar BezierGait: asegúrate de que esté en PYTHONPATH o en el mismo directorio
+# Importar BezierGait
 try:
     from src.gait.bezier_gait import BezierGait
 except ImportError:
-    # Si está en src/gait/, descomenta la siguiente línea
+    # Si BezierGait está en otra carpeta, ajusta la ruta aquí
     # sys.path.append(os.path.expanduser("~/robot/src/gait"))
     from src.gait.bezier_gait import BezierGait
 
@@ -29,12 +29,12 @@ except ImportError:
 class GaitVisualizer:
     def __init__(self,
                  Tswing=0.25,
-                 L=0.08,              # mitad de la longitud del paso (adelante/atrás)
-                 LateralFraction=0.0, # 0.0 = puro X, >0 = deriva lateral
-                 YawRate=0.0,         # rad/s (positivo = giro antihorario)
-                 vel=0.3,             # m/s
-                 clearance_height=0.05,
-                 penetration_depth=0.01,
+                 L=0.06,              # mitad de la longitud del paso
+                 LateralFraction=0.0,
+                 YawRate=0.0,
+                 vel=0.2,
+                 clearance_height=0.04,
+                 penetration_depth=0.005,
                  dt=0.02):
         
         self.robot = RobotModel()
@@ -49,11 +49,11 @@ class GaitVisualizer:
         self.clearance_height = clearance_height
         self.penetration_depth = penetration_depth
 
-        # Estado inicial: usar postura neutral de RobotModel
+        # Estado inicial
         self.T_bf = copy.deepcopy(self.robot.WorldToFoot)
         self.time = 0.0
 
-        # Orden fijo de patas (¡crucial para fases correctas!)
+        # Orden fijo de patas
         self.leg_order = ["FL", "FR", "RL", "RR"]
         self.colors = {
             "FL": "red",
@@ -68,26 +68,25 @@ class GaitVisualizer:
             "RR": "gold"
         }
 
-        # Historial de trayectorias
+        # Historial
         self.trajectories = {leg: [] for leg in self.leg_order}
         self.swing_flags = {leg: [] for leg in self.leg_order}
 
         # Figura
         self.fig = plt.figure(figsize=(12, 8))
         self.ax = self.fig.add_subplot(111, projection='3d')
-        self.ax.set_xlim([-0.3, 0.3])
-        self.ax.set_ylim([-0.3, 0.3])
-        self.ax.set_zlim([-0.3, 0.2])
+        max_range = 2
+        self.ax.set_xlim([-max_range, max_range])
+        self.ax.set_ylim([-max_range, max_range])
+        self.ax.set_zlim([-max_range, max_range])
         self.ax.set_xlabel('X (adelante)')
         self.ax.set_ylabel('Y (izquierda)')
         self.ax.set_zlabel('Z (arriba)')
 
     def step(self):
-        """Genera un paso de la marcha y actualiza las posiciones de los pies."""
-        # Simulamos contacto constante (puedes extender con sensores reales)
-        contacts = [1, 1, 1, 1]
+        contacts = [1, 1, 1, 1]  # Simulación: siempre en contacto
 
-        # Aseguramos que T_bf_ tenga el orden correcto (aunque sea dict)
+        # Garantizar orden explícito
         T_bf_ordered = {leg: self.T_bf[leg] for leg in self.leg_order}
 
         # Generar nueva trayectoria
@@ -104,16 +103,20 @@ class GaitVisualizer:
             dt=self.dt
         )
 
-        # Actualizar estado
         self.T_bf = T_bf_next
         self.time += self.dt
+
+        # Diagnóstico: imprimir cada 1 segundo
+        if int(self.time / self.dt) % 50 == 0:
+            p_fl = self.T_bf["FL"][:3, 3]
+            print(f"t={self.time:.2f}s | FL pie: [{p_fl[0]:.3f}, {p_fl[1]:.3f}, {p_fl[2]:.3f}]")
 
         # Guardar historial
         for leg in self.leg_order:
             p = self.T_bf[leg][:3, 3]
             self.trajectories[leg].append(p.copy())
 
-            # Determinar modo actual (swing o stance)
+            # Determinar modo
             Tstance = 2.0 * abs(self.L) / (abs(self.vel) + 1e-6) if self.vel != 0 else 0.0
             _, mode = self.gait.GetPhase(
                 index=self.leg_order.index(leg),
@@ -124,25 +127,24 @@ class GaitVisualizer:
 
     def animate(self, frame):
         self.ax.clear()
-        self.ax.set_xlim([-0.3, 0.3])
-        self.ax.set_ylim([-0.3, 0.3])
-        self.ax.set_zlim([-0.3, 0.2])
+        max_range = 2
+        self.ax.set_xlim([-max_range, max_range])
+        self.ax.set_ylim([-max_range, max_range])
+        self.ax.set_zlim([-max_range, max_range])
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
         self.ax.set_title(f'Marcha de Bézier - t = {self.time:.2f}s')
 
-        # Avanzar simulación
         self.step()
 
-        # Dibujar cuerpo (origen)
+        # Cuerpo
         self.ax.scatter([0], [0], [0], color='black', s=100, label='Cuerpo')
 
-        # Dibujar trayectorias y pies actuales
+        # Pies y trayectorias
         for leg in self.leg_order:
             traj = np.array(self.trajectories[leg])
             if len(traj) > 1:
-                # Dibujar segmentos con color según modo
                 for i in range(1, len(traj)):
                     color = self.swing_colors[leg] if self.swing_flags[leg][i] else self.colors[leg]
                     self.ax.plot(
@@ -152,18 +154,18 @@ class GaitVisualizer:
                         color=color,
                         linewidth=1.5
                     )
-            # Pie actual
             p = self.T_bf[leg][:3, 3]
-            current_mode = 'swing' if self.swing_flags[leg][-1] else 'stance'
-            color = self.swing_colors[leg] if current_mode == 'swing' else self.colors[leg]
+            color = self.swing_colors[leg] if self.swing_flags[leg][-1] else self.colors[leg]
             self.ax.scatter([p[0]], [p[1]], [p[2]], color=color, s=50)
 
-        # Leyenda manual
-        self.ax.scatter([], [], color='red', s=50, label='FL (stance)')
-        self.ax.scatter([], [], color='salmon', s=50, label='FL (swing)')
-        self.ax.scatter([], [], color='blue', s=50, label='FR (stance)')
-        self.ax.scatter([], [], color='skyblue', s=50, label='FR (swing)')
-        self.ax.legend(loc='upper left', fontsize=7)
+        # Leyenda simplificada
+        legend_elements = [
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='salmon', markersize=8, label='FL/RL Swing'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=8, label='FL/RL Stance'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', markersize=8, label='FR/RR Swing'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=8, label='FR/RR Stance'),
+        ]
+        self.ax.legend(handles=legend_elements, loc='upper left', fontsize=8)
 
     def run(self, duration=6.0):
         frames = int(duration / self.dt)
@@ -174,12 +176,12 @@ class GaitVisualizer:
 if __name__ == "__main__":
     visualizer = GaitVisualizer(
         Tswing=0.25,
-        L=0.08,              # longitud de paso (total = 2*L)
-        LateralFraction=0.0, # 0.0 = recto, 0.3 = ligera deriva
-        YawRate=0.5,         # giro antihorario
-        vel=0.4,             # m/s
-        clearance_height=0.05,
+        L=0.06,              # Paso total = 12 cm
+        LateralFraction=0.0, # Recto
+        YawRate=0.0,         # Sin giro
+        vel=0.2,             # 0.2 m/s
+        clearance_height=0.04,
         penetration_depth=0.005,
-        dt=0.02              # más rápido para visualización
+        dt=0.02
     )
     visualizer.run(duration=8.0)
