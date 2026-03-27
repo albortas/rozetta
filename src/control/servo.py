@@ -18,21 +18,21 @@ def set_servo_angle(channel, angle):
 
 # Ejemplo: mover servo en canal 0 a 90°
 shoulder = 90
-femur = 15
-foot = 25
+femur = 90
+foot = 90
 # Leg FL
-set_servo_angle(12, shoulder + 5)
+set_servo_angle(12, shoulder)
 set_servo_angle(13, femur)
 set_servo_angle(14, 170 - foot)
 
 # Leg FR
-set_servo_angle(0, shoulder - 5)
+set_servo_angle(0, shoulder)
 set_servo_angle(1, 180 - femur)
 set_servo_angle(2, foot)
 
 # Leg RL
 set_servo_angle(8, 170 - shoulder)
-set_servo_angle(9, femur + 10)
+set_servo_angle(9, femur)
 set_servo_angle(10, 180 - foot)
 
 # Leg RR

@@ -77,9 +77,9 @@ class OffsetCalibrator:
             if cmd == 's':
                 break
             elif cmd == '+':
-                current_offset += 0.5
+                current_offset += 1
             elif cmd == '-':
-                current_offset -= 0.5
+                current_offset -= 1
             else:
                 print("     ⚠️  Usa '+', '-' o 's'")
                 continue

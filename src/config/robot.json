@@ -59,7 +59,7 @@
               "channel": 13,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 15
+              "rest_angle": 90
             }
           ],
           "FL_knee": [
@@ -68,7 +68,7 @@
               "channel": 14,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 25
+              "rest_angle": 90
             }
           ],
           "FR_hip_roll": [
@@ -86,7 +86,7 @@
               "channel": 1,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 15
+              "rest_angle": 90
             }
           ],
           "FR_knee": [
@@ -95,7 +95,7 @@
               "channel": 2,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 25
+              "rest_angle": 90
             }
           ],
           "RL_hip_roll": [
@@ -113,7 +113,7 @@
               "channel": 9,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 15
+              "rest_angle": 90
             }
           ],
           "RL_knee": [
@@ -122,7 +122,7 @@
               "channel": 10,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 25
+              "rest_angle": 90
             }
           ],
           "RR_hip_roll": [
@@ -140,7 +140,7 @@
               "channel": 5,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 15
+              "rest_angle": 90
             }
           ],
           "RR_knee": [
@@ -149,7 +149,7 @@
               "channel": 6,
               "min_pulse": 500,
               "max_pulse": 2500,
-              "rest_angle": 25
+              "rest_angle": 90
             }
           ],
           "arm_rotation": [
